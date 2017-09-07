@@ -1,19 +1,19 @@
-FROM ubuntu:16.04
+FROM centos:centos6
 
 ARG RABBITMQ_C_VERSION=0.8.0
 
-RUN apt-get -qq update
-RUN apt-get -qqy --no-install-recommends install \
-    build-essential \
+RUN yum -y update
+RUN yum -y install \
+    perl make automake gcc gmp-devel libffi zlib zlib-devel xz tar \
     curl \
     ca-certificates \
     cmake \
-    openssl \
+    openssl
 
 
 RUN curl -O -L https://github.com/alanxz/rabbitmq-c/releases/download/v${RABBITMQ_C_VERSION}/rabbitmq-c-${RABBITMQ_C_VERSION}.tar.gz \
-    && tar -zxf rabbitmq-c-$RABBITMQ_C_VERSION.tar.gz
-    && cd rabbitmq-c-$RABBITMQ_C_VERSION
+    && tar -zxf rabbitmq-c-$RABBITMQ_C_VERSION.tar.gz \
+    && cd rabbitmq-c-$RABBITMQ_C_VERSION \
     && mkdir build && cd build \
     && cmake -DENABLE_SSL_SUPPORT=OFF .. \
     && cmake --build . --target install
@@ -23,3 +23,4 @@ RUN mkdir /dist
 WORKDIR /source
 
 ENTRYPOINT ["make"]
+
