@@ -63,6 +63,11 @@
 #include <assert.h>
 #include <getopt.h>
 
+#ifdef __APPLE__
+#include <signal.h>
+#include <sys/stat.h>
+#endif
+
 #define AMQP_CHANNEL 1
 #define DEFAULT_PREFETCH 10
 
@@ -338,8 +343,10 @@ int main(int argc, char **argv) {
     setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen);
   }
   {
+    int autodelete;
+    autodelete = ( exchange[0] != '\0' ? 1 : 0 );
     amqp_queue_declare_ok_t *r = amqp_queue_declare(conn, AMQP_CHANNEL, queue, passive,
-        durable, exclusive, 1, AMQP_EMPTY_TABLE);
+        durable, exclusive, autodelete, AMQP_EMPTY_TABLE);
     die_on_amqp_error(amqp_get_rpc_reply(conn), "Declaring queue");
     queuename = amqp_bytes_malloc_dup(r->queue);
     if (queuename.bytes == NULL) {
@@ -348,9 +355,11 @@ int main(int argc, char **argv) {
     }
   }
 
-  amqp_queue_bind(conn, AMQP_CHANNEL, queuename, amqp_cstring_bytes(exchange),
-                  amqp_cstring_bytes(bindingkey), AMQP_EMPTY_TABLE);
-  die_on_amqp_error(amqp_get_rpc_reply(conn), "Binding queue");
+  if ( exchange[0] != '\0' ) {
+    amqp_queue_bind(conn, AMQP_CHANNEL, queuename, amqp_cstring_bytes(exchange),
+                    amqp_cstring_bytes(bindingkey), AMQP_EMPTY_TABLE);
+    die_on_amqp_error(amqp_get_rpc_reply(conn), "Binding queue");
+  }
 
   /* Set our prefetch to the maximum number of messages we want to ensure we
    * don't take more than we want according to --number option from user */

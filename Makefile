@@ -1,30 +1,25 @@
+.PHONY: all build
 
-ifeq (${AMQPTOOLS_RABBITHOME},)
-    AMQPTOOLS_RABBITHOME = "/usr/local/src/rabbitmq/rabbitmq-c"
-endif
-
-ifeq (${AMQPTOOLS_INSTALLROOT},)
-    AMQPTOOLS_INSTALLROOT = "/usr/local/bin"
-endif
-
+CFLAGS=-I/opt/local/include -Wno-deprecated-declarations
+LDFLAGS=-L/opt/local/lib -lrabbitmq -Bstatic
 
 all: clean build
 
 build: amqpspawn amqpsend
 
 install: bin/amqpspawn bin/amqpsend
-	install -D -m0755 bin/amqpspawn $(AMQPTOOLS_INSTALLROOT)/amqpspawn
-	install -D -m0755 bin/amqpsend $(AMQPTOOLS_INSTALLROOT)/amqpsend
+	install -D -m0755 amqpspawn $(PREFIX)/bin/amqpspawn
+	install -D -m0755 amqpsend $(PREFIX)/bin/amqpsend
 
 uninstall:
-	rm -f $(AMQPTOOLS_INSTALLROOT)/amqpspawn
-	rm -f $(AMQPTOOLS_INSTALLROOT)/amqpsend
+	rm -f $(PREFIX)/bin/amqpspawn
+	rm -f $(PREFIX)/bin/amqpsend
 
 amqpspawn: amqpspawn.c
-	gcc -o bin/amqpspawn amqpspawn.c -I$(AMQPTOOLS_RABBITHOME)/librabbitmq $(AMQPTOOLS_RABBITHOME)/librabbitmq/.libs/librabbitmq.so
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $? $(LDFLAGS)
 
 amqpsend: amqpsend.c
-	gcc -o bin/amqpsend amqpsend.c -I$(AMQPTOOLS_RABBITHOME)/librabbitmq $(AMQPTOOLS_RABBITHOME)/librabbitmq/.libs/librabbitmq.so
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $? $(LDFLAGS)
 
 clean:
-	rm -f bin/amqpsend bin/amqpspawn
+	-rm -f amqpsend amqpspawn
