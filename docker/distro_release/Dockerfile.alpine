@@ -1,0 +1,29 @@
+FROM alpine:latest
+
+ARG RABBITMQ_C_VERSION=0.8.0
+
+RUN apk add --no-cache --virtual .build-deps \
+        build-base \
+        curl \
+        make \
+        perl-dev \
+        readline-dev \
+        zlib-dev \
+        libgcc \
+        zlib \
+        xz \
+        tar \
+        cmake
+
+RUN curl -O -L https://github.com/alanxz/rabbitmq-c/releases/download/v${RABBITMQ_C_VERSION}/rabbitmq-c-${RABBITMQ_C_VERSION}.tar.gz \
+    && tar -zxf rabbitmq-c-$RABBITMQ_C_VERSION.tar.gz \
+    && cd rabbitmq-c-$RABBITMQ_C_VERSION \
+    && mkdir build && cd build \
+    && cmake -DENABLE_SSL_SUPPORT=OFF .. \
+    && cmake --build . --target install
+
+RUN mkdir /source
+RUN mkdir /dist
+WORKDIR /source
+
+ENTRYPOINT ["make"]

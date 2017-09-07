@@ -75,6 +75,8 @@ jobs:
   ubuntui386:
     <<: *build-distro-bin
 
+  alpine:
+    <<: *build-distro-bin
   release:
     docker:
       - image: circleci/golang:1.8
@@ -138,12 +140,21 @@ workflows:
               only: /v[0-9]+(\.[0-9]+)*/
             branches:
               ignore: /.*/
+      - alpine:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
       - release:
           requires:
             - centos6
             - centos7
             - ubuntu
             - ubuntui386
+            - alpine
           filters:
             tags:
               only: /v[0-9]+(\.[0-9]+)*/
