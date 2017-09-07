@@ -1,0 +1,40 @@
+FROM ubuntu:16.04
+
+ARG RABBITMQ-C-VERSION=0.8.0
+RUN apt-get -qq update
+RUN apt-get -qqy --no-install-recommends install build-essential
+RUN apt-get -qqy --no-install-recommends install \
+    curl
+RUN apt-get -qqy --no-install-recommends install ca-certificates
+
+ARG RABBITMQ_C_VERSION=0.8.0
+RUN curl -O -L https://github.com/alanxz/rabbitmq-c/releases/download/v${RABBITMQ_C_VERSION}/rabbitmq-c-${RABBITMQ_C_VERSION}.tar.gz
+RUN ls -al
+RUN tar -zxf rabbitmq-c-$RABBITMQ_C_VERSION.tar.gz
+RUN cd rabbitmq-c-$RABBITMQ_C_VERSION
+
+RUN apt-get -qqy --no-install-recommends install cmake
+RUN apt-get -qqy --no-install-recommends install openssl
+RUN openssl version -a
+# RUN apt-get -qqy --no-install-recommends install libtool python-simplejson gcc
+
+RUN cd rabbitmq-c-$RABBITMQ_C_VERSION \
+    && mkdir build && cd build \
+    # && export OPENSSL_ROOT_DIR=/usr/lib/ssl \
+    && cmake -DENABLE_SSL_SUPPORT=OFF .. \
+    && cmake --build . --target install
+
+# RUN cd rabbitmq-c-$RABBITMQ_C_VERSION \
+#     && ls -al \
+#     && autoreconf -i \
+#     && ./configure \
+#     && make \
+#     && make install
+# To disable warning when building
+# ENV PATH $PATH:/root/.local/bin
+
+RUN mkdir /source
+RUN mkdir /dist
+WORKDIR /source
+
+ENTRYPOINT ["make"]

@@ -7,7 +7,7 @@ all: clean build
 
 build: amqpspawn amqpsend
 
-install: bin/amqpspawn bin/amqpsend
+install: build
 	install -D -m0755 amqpspawn $(PREFIX)/bin/amqpspawn
 	install -D -m0755 amqpsend $(PREFIX)/bin/amqpsend
 
