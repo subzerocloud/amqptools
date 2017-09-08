@@ -1,7 +1,7 @@
 .PHONY: all build
 
 CFLAGS=-I/opt/local/include -Wno-deprecated-declarations
-LDFLAGS=-L/opt/local/lib -lrabbitmq -Bstatic
+LDFLAGS=-L/opt/local/lib -l:librabbitmq.a -Bstatic 
 
 all: clean build
 
@@ -17,7 +17,7 @@ uninstall:
 
 amqpspawn: amqpspawn.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $? $(LDFLAGS)
-
+	
 amqpsend: amqpsend.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $? $(LDFLAGS)
 
