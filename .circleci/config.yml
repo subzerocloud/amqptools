@@ -108,14 +108,6 @@ workflows:
           filters:
             tags:
               only: /v[0-9]+(\.[0-9]+)*/
-      - centos6:
-          requires:
-            - build
-          filters:
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*/
-            branches:
-              ignore: /.*/
       - centos7:
           requires:
             - build
@@ -150,7 +142,6 @@ workflows:
               ignore: /.*/
       - release:
           requires:
-            - centos6
             - centos7
             - ubuntu
             - ubuntui386
