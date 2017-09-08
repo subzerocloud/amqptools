@@ -8,7 +8,7 @@ RUN apt-get -qqy --no-install-recommends install \
     curl \
     ca-certificates \
     cmake \
-    openssl \
+    openssl
 
 
 RUN curl -O -L https://github.com/alanxz/rabbitmq-c/releases/download/v${RABBITMQ_C_VERSION}/rabbitmq-c-${RABBITMQ_C_VERSION}.tar.gz \
