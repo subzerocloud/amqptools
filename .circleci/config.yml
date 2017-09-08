@@ -89,16 +89,16 @@ jobs:
           command: |
             go get -u github.com/tcnksm/ghr
             ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace $CIRCLE_TAG /tmp/workspace/bin
-      # - setup_remote_docker
-      # - run:
-      #     name: publish docker image
-      #     command: |
-      #       docker build --build-arg AMQPTOOLS_VERSION=$CIRCLE_TAG -t amqptools ./docker/
-      #       docker login -u $DOCKER_USER -p $DOCKER_PASS
-      #       docker tag amqptools subzerocloud/amqptools:$CIRCLE_TAG
-      #       docker push subzerocloud/amqptools:$CIRCLE_TAG
-      #       docker tag amqptools subzerocloud/amqptools:latest
-      #       docker push subzerocloud/amqptools:latest
+      - setup_remote_docker
+      - run:
+          name: publish docker image
+          command: |
+            docker build --build-arg AMQPTOOLS_VERSION=$CIRCLE_TAG -t amqptools ./docker/
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker tag amqptools subzerocloud/amqptools:$CIRCLE_TAG
+            docker push subzerocloud/amqptools:$CIRCLE_TAG
+            docker tag amqptools subzerocloud/amqptools:latest
+            docker push subzerocloud/amqptools:latest
 
 workflows:
   version: 2
