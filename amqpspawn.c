@@ -155,6 +155,7 @@ void print_help(const char *program_name) {
   fprintf(stderr, "  --exclusive            declare the queue as exclusive\n");
   fprintf(stderr, "  --durable              declare the queue should survive broker restart\n");
   fprintf(stderr, "  --no-ack               do not send acks to the server (WARNING: may cause data loss!)\n");
+  fprintf(stderr, "  --max-delay/-d sec     wait for host to be available (default: 0)\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "Refer to the AMQP documentation for full explanation of the passive,\n");
   fprintf(stderr, "exclusive and durable options.\n");
@@ -175,6 +176,7 @@ void print_help(const char *program_name) {
 int main(int argc, char **argv) {
   char const *hostname = "amqpbroker"; // amqp hostname
   int port = 5672; // amqp port
+  int max_delay = 0;
   static int verbose_flag = 0; // be verbose?
   static int foreground_flag = 0;
   static int passive = 0;  // declare queue passively?
@@ -230,6 +232,7 @@ int main(int argc, char **argv) {
       {"vhost", required_argument, 0, 'v'},
       {"host", required_argument, 0, 'h'},
       {"port", required_argument, 0, 'P'},
+      {"max-delay", required_argument, 0, 'd'},
       {"number", required_argument, 0, 'n'},
       {"foreground", no_argument, 0, 'f'},
       {"passive", no_argument, &passive, 1},
@@ -242,7 +245,7 @@ int main(int argc, char **argv) {
       {0, 0, 0, 0}
     };
     int option_index = 0;
-    c = getopt_long(argc, argv, "v:h:P:u:p:n:fe:q:?",
+    c = getopt_long(argc, argv, "v:h:P:d:u:p:n:fe:q:?",
                     long_options, &option_index);
     if(c == -1)
       break;
@@ -259,6 +262,10 @@ int main(int argc, char **argv) {
       case 'P':
         port = atoi(optarg);
         port = port > 0 ? port : 5672; // 5672 is the default amqp port
+        break;
+      case 'd':
+        max_delay = atoi(optarg);
+        max_delay = max_delay > 0 ? max_delay * 1000000 : 0;
         break;
       case 'f':
         foreground_flag = 1;
@@ -325,7 +332,24 @@ int main(int argc, char **argv) {
 
   conn = amqp_new_connection();
 
-  die_on_error(sockfd = amqp_open_socket(hostname, port), "Opening socket");
+  sockfd = amqp_open_socket(hostname, port);
+  if (max_delay > 0) {
+    useconds_t delay = 1000000; // Delay in usec
+    while(sockfd < 0){
+        fprintf(stderr, "Opening socket: a socket error occurred\n");
+        fprintf(stderr, "Sleeping: %u seconds\n", delay / 1000000);
+        usleep(delay);
+        sockfd = amqp_open_socket(hostname, port);
+        if (delay < max_delay){
+            delay *= 2;
+        }
+        else {
+          break;
+        }
+    }
+  }
+  die_on_error(sockfd, "Opening socket");
+
   fcntl(sockfd, F_SETFD, FD_CLOEXEC);
   amqp_set_sockfd(conn, sockfd);
   die_on_amqp_error(amqp_login(conn, vhost,

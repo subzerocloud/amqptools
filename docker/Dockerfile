@@ -25,7 +25,8 @@ RUN chmod +x onmessage.sh
 
 ENV EXCHANGE="amq.topic" \
     ROUTING_KEY="#" \
-    PROGRAM="/onmessage.sh" 
+    PROGRAM="/onmessage.sh" \
+    MAX_DELAY=30 
 
 # other env vars controlling the behaviour
 # AMQP_HOST
@@ -39,4 +40,4 @@ ENV EXCHANGE="amq.topic" \
 # AMQP_QUEUE_DURABLE
 
 
-ENTRYPOINT amqpspawn --foreground -e $PROGRAM $EXCHANGE $ROUTING_KEY
+ENTRYPOINT amqpspawn --foreground -e $PROGRAM --max-delay $MAX_DELAY $EXCHANGE $ROUTING_KEY
